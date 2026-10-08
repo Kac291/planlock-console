@@ -1,0 +1,5 @@
+mode: warn
+thresholds:
+  match: 0.7
+  partial: 0.4
+ignoreMinorExtras: true

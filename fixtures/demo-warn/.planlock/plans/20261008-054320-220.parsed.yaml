@@ -1,0 +1,40 @@
+version: 1
+steps:
+  - id: s1
+    summary: 定义配置表 schema
+    scope:
+      files:
+        - tools/config_check/schema.ts
+      commands: []
+      operations:
+        - Edit
+        - Write
+    dependencies: []
+  - id: s2
+    summary: 实现数值规则
+    scope:
+      files:
+        - tools/config_check/rules.ts
+      commands: []
+      operations:
+        - Write
+    dependencies: []
+  - id: s3
+    summary: 补测试
+    scope:
+      files:
+        - tools/config_check/rules.test.ts
+      commands: []
+      operations:
+        - Write
+        - Bash
+    dependencies: []
+  - id: s4
+    summary: 跑测试
+    scope:
+      files: []
+      commands:
+        - pnpm test
+      operations:
+        - Bash
+    dependencies: []
