@@ -3,3 +3,4 @@ dist/
 demo-workspace/
 console.config.json
 *.log
+start-console.log

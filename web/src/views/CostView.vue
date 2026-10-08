@@ -49,12 +49,21 @@ const cacheHit = computed(() => {
   const all = t.inputTokens + t.cacheWriteTokens + t.cacheReadTokens;
   return all ? t.cacheReadTokens / all : null;
 });
-const routedCheap = computed(() => {
+const total = (r: { haiku: number; sonnet: number; opus: number }) => r.haiku + r.sonnet + r.opus;
+// Prefer this session's routing; if ClaudeThrottle never routed in it, fall back to the all-time log so the tile still says something true.
+const routing = computed(() => {
   const r = detail.value?.routing;
   if (!r) return null;
-  const n = r.haiku + r.sonnet + r.opus;
-  return n ? r.haiku / n : null;
+  if (total(r) > 0) return { r, scope: "本会话" };
+  const all = overview.value?.routingAllTime;
+  return all && total(all) > 0 ? { r: all, scope: "本会话未路由 · 全部会话累计" } : { r, scope: "本会话" };
 });
+const routedCheap = computed(() => {
+  const x = routing.value;
+  return x && total(x.r) ? x.r.haiku / total(x.r) : null;
+});
+// "c--Users-hewen-Desktop-unsw----9331-ass" -> "Desktop-unsw…9331-ass" (non-ASCII path chars are encoded as "-")
+const projectLabel = (p: string) => p.replace(/^[a-zA-Z]--Users-[^-]+-/, "").replace(/^-home-[^-]+-?/, "").replace(/-{2,}/g, "…") || p;
 </script>
 
 <template>
@@ -85,7 +94,7 @@ const routedCheap = computed(() => {
           @click="router.push({ name: 'cost-session', params: { sid: s.sessionId } })"
         >
           <span class="mono">{{ shortId(s.sessionId) }}</span>
-          <span class="small faint row2"><span class="proj">{{ s.project }}</span><span>{{ timeAgo(s.updatedAt) }}</span></span>
+          <span class="small faint row2"><span class="proj" :title="s.project">{{ projectLabel(s.project) }}</span><span class="when">{{ timeAgo(s.updatedAt) }}</span></span>
         </li>
       </ul>
     </aside>
@@ -100,9 +109,10 @@ const routedCheap = computed(() => {
           <div class="panel tile"><span class="small muted">缓存命中率</span><b>{{ cacheHit === null ? "—" : `${Math.round(cacheHit * 100)}%` }}</b><span class="small faint">读取 / 全部输入</span></div>
           <div class="panel tile">
             <span class="small muted">ClaudeThrottle 路由</span>
-            <template v-if="detail.routing">
+            <template v-if="routing">
               <b>{{ routedCheap === null ? "—" : `${Math.round(routedCheap * 100)}%` }}</b>
-              <span class="small faint">子 Agent 走 Haiku · H{{ detail.routing.haiku }} / S{{ detail.routing.sonnet }} / O{{ detail.routing.opus }}<template v-if="detail.routing.opusBlocked"> · 拦下 Opus {{ detail.routing.opusBlocked }}</template></span>
+              <span class="small faint">子 Agent 走 Haiku · H{{ routing.r.haiku }} / S{{ routing.r.sonnet }} / O{{ routing.r.opus }}<template v-if="routing.r.opusBlocked"> · 拦下 Opus {{ routing.r.opusBlocked }}</template></span>
+              <span class="small faint">{{ routing.scope }}</span>
             </template>
             <template v-else><b class="faint">未安装</b><span class="small faint">没找到 usage.log</span></template>
           </div>
@@ -168,6 +178,7 @@ const routedCheap = computed(() => {
 .list li:hover { background: var(--panel-2); }
 .list li.on { background: var(--accent-soft); }
 .row2 { display: flex; justify-content: space-between; gap: 8px; }
+.when { flex: none; white-space: nowrap; }
 .proj { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .right { display: grid; gap: 16px; min-width: 0; }
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }

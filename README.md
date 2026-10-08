@@ -10,6 +10,8 @@
 
 ![会话详情（strict 模式）](docs/session-strict.png)
 
+![Token 成本页：作者本机的真实 Claude Code 会话（87 轮）](docs/cost.png)
+
 ## 快速开始
 
 需要 Node.js ≥ 20。

@@ -102,7 +102,7 @@ function topPath(r: Rect) {
         <g>
           <template v-for="v in ticks" :key="v">
             <line :x1="PAD.left" :x2="width - PAD.right" :y1="y(v)" :y2="y(v)" class="grid" />
-            <text :x="PAD.left - 8" :y="y(v) + 4" text-anchor="end" class="axis">{{ usd(v) }}</text>
+            <text :x="PAD.left - 8" :y="y(v) + 4" text-anchor="end" class="axis">{{ v === 0 ? "$0" : v < 0.01 ? usd(v) : `$${v.toFixed(2)}` }}</text>
           </template>
         </g>
         <rect
